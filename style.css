@@ -1,0 +1,10 @@
+body, html {
+    height: 100%;
+    display: grid;
+    background: #222;
+}
+#canvas{
+    width: 640px;
+    height: 640px;
+    margin: auto;
+}
