@@ -1,10 +1,90 @@
 body, html {
     height: 100%;
-    display: grid;
-    background: #222;
+    background: #111;
+    padding:0;
+    overflow-x: hidden;
 }
-#canvas{
-    width: 640px;
-    height: 640px;
+body{
+    font-family: 'Teko', sans-serif;
+    margin:0;
+    display: grid;
+    grid-template-columns: 100vh auto;
+    grid-template-rows: 100vh auto;
+}
+app{
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    padding:0;
+    height: inherit;
+    overflow: hidden;
+}
+
+controls{
+    background:#222;
+    padding:1rem;
+    min-height: 20rem;
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+@media only screen and (min-width: calc(100vh + 22rem)) {
+    controls {
+        grid-column: 2 / 3;
+        grid-row: 1 / 2;
+    }
+}
+
+.slidecontainer{
+    padding: 0.1rem 0.5rem 1rem;
+}
+.slidecontainer p{
+    color:#fff;
     margin: auto;
+    text-align: center;
+    font-size: 150%;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 95%;
+    height: 10px;
+    border-radius: 5px;  
+    background: #3b3b3b;
+    outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%; 
+    background: rgb(255, 255, 255);
+    cursor: grab;
+}
+
+.slider::-moz-range-thumb {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: rgb(255, 255, 255);
+    cursor: grab;
+}
+
+button{
+    font-family: 'Teko', sans-serif;
+    font-size: 200%;
+    background-color: rgba(76, 175, 79, 0.26); /* Green */
+    border: none;
+    color: white;
+    padding: 0.2rem 1rem 0;
+    width: 100%;
+    max-width: 10rem;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    margin: auto;
+}
+button:hover{
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
