@@ -204,7 +204,7 @@ function read_controls(){
 }
 
 $(function() {
-  h = $("body").height()-2;
+  h = Math.min($("body").height(), $("body").width())-2;
   $("app").html("<canvas id=\"canvas\" width=\""+h+"\" height=\""+h+"\"></canvas>");
 
   canvas = $('#canvas')[0];
