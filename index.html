@@ -4,19 +4,64 @@
 <head>
   <meta charset="utf-8">
 
-  <title>Turing Inspired Art Bots</title>
+  <title>Artomata</title>
   <meta name="description" content="Turing Inspired Art Bots">
   <meta name="author" content="Harry Hinch">
+  <meta name="contact" content="https://github.com/harryhinch/">
+  <meta name="version" content="1.0.0">
 
-  <link rel="stylesheet" href="style.css?v=1.0.1">
-  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600&display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="style.css?v=1.1.0">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;600&display=swap" rel="stylesheet"> 
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
 
 </head>
 
 <body>
-  <app id="turing"></app>
-  <controls></controls>
-  <script src="turing.js?v=0.1.0"></script>
+  <div id="artomata">
+    <div class="window">
+      <div class="header">
+        Artomata
+        <span class="subtext">v.1.0.0</span>
+        <span class="author">made by <a href="https://github.com/harryhinch/artomata">@harryhinch 
+        <img alt="Transparent White GitHub Mark" width=20 height=20 src="
+          data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABUUlEQV
+          Q4y52UQWvCQBCFVwXBWyj0ogfFFpX2VpCAggdTT55qi6dIRdoqCNqDCD2k9p+nb8osDMOmyWbhA3
+          0z7+0muxtjMkaapi0wBTHYMTFrLVN0oLkJNuAnB+pp5oWF4LtAmIV6w6ywkUeQZqTDOuDCxTV4yH
+          nsDfes+T95OzasAvaieSImaoMrUGPod1vUJ8JHGRUSB2r2mccGzpR3QOJCiV2PwK7yLkg8COHDeA
+          7yCP+BhEQITyUC5RMmRuwusSwRuBT+CwknIRxLBB6F/2T4fsoX2/MI6ylvbK+bFM9Fdpp3+Ky8IR
+          Ua4IuXfgc+ufjGX5aaCKHDHYF3x+2hjIZtHLO4Bbdi5mfHyl4yruNYNtH1W3FhCK7BDQgcgVNH2O
+          rv2qnGOnjlY0QbNQf3jsBIhZGnnvWiq7wCe9ijfwIT7q0WOQ4BeAR9R63PtcDl/QVYMgvfS71fBw
+          AAAABJRU5ErkJggg=="></a>
+        </span>
+      </div>
+      <div id="artomatacanvas">
+        <div class="loading-anim"><div></div><div></div><div></div><div></div></div>
+      </div>
+    </div>
+  </div>
+  <div id="controls">
+    <div class="window">
+      <div class="header">Palette</div>
+      <div class="contents" id="palettes">
+        <div class="loading-anim"><div></div><div></div><div></div><div></div></div>
+      </div>
+    </div>
+    <div class="window">
+      <div class="header">Simulation</div>
+      <div class="contents" id="settings">
+        <div class="loading-anim"><div></div><div></div><div></div><div></div></div>
+      </div>
+    </div>
+    <div class="window">
+      <div class="header">Playback</div>
+      <div class="contents" id="playback">
+        <div class="loading-anim"><div></div><div></div><div></div><div></div></div>
+      </div>
+    </div>
+  </div>
+  <script src="palettes.js?v=1.0.0"></script>
+  <script src="simulation.js?v=1.0.0"></script>
+  <script src="main.js?v=1.0.0"></script>
 </body>
 </html>

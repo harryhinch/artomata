@@ -1,1 +1,1 @@
-Demo: https://harryhinch.github.io/turing/
+Demo: https://harryhinch.github.io/artomata/
