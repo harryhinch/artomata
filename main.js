@@ -1,8 +1,8 @@
-// v1.0.0
+// v1.1.0
 
 
-var canvas;// = $('#canvas')[0];
-var ctx;// = canvas.getContext('2d');
+var canvas;
+var ctx;
 var tape;
 
 var arraySize = 32;
@@ -26,7 +26,7 @@ var HALTCHANCE = 0.0001;
 var STATE_DIRS = [C_LEFT, C_RIGHT, C_UP, C_DOWN];
 
 
-var currentPalette = palettes["Whitepaper"]; // from palletes.js
+var currentPalette = palettes["Blue Retro"]; // from palletes.js
 var ctrlarray = [];
 
 function round_lerp (a, b, t) { return Math.round( (1 - t) * b + t * a ) }
@@ -139,7 +139,7 @@ function redrawGrid(){
 
 function do_palette_change()
 {
-  let newPaletteName = $("input[name=chosenpalette]:checked").val();
+  let newPaletteName = document.querySelector("input[name=chosenpalette]:checked").value;
   currentPalette = palettes[newPaletteName];
 
   if(currentPalette.type == 'GRADIENT')
@@ -148,86 +148,86 @@ function do_palette_change()
   if(currentPalette.type == 'LIST_SHUFFLE')
     currentPalette.colors.shuffle();
 
-  $('#artomata').css('background-color', currentPalette.background);
+  document.getElementById('artomata').style.backgroundColor = currentPalette.background;
   
   redrawGrid();
+}
+
+
+function controlOnInput(me) {
+  document.getElementById(me.id + '_span').innerText = me.value;
 }
 
 function read_controls(){
   ctrlarray.forEach(ctrl => {
     if(ctrl.t == "INT")
-      window[ctrl.v] = parseInt($("#"+ctrl.i).val());
+      window[ctrl.v] = parseInt(document.getElementById(ctrl.i).value);
     if(ctrl.t == "FLOAT")
-      window[ctrl.v] = parseFloat($("#"+ctrl.i).val());
-    if(ctrl.T == "STRING")
-      window[ctrl.v] = $("#"+ctrl.i).val();
+      window[ctrl.v] = parseFloat(document.getElementById(ctrl.i).value);
+    if(ctrl.t == "STRING")
+      window[ctrl.v] = document.getElementById(ctrl.i).value;
   });
 }
 
-$(function() {
-  h = Math.min($("body").height(), $("body").width())-40;
-  $("#artomatacanvas").html("<canvas id=\"canvas\" width=\""+h+"\" height=\""+h+"\"></canvas>");
+window.onload = () => {
+  h = Math.min(document.documentElement.clientHeight, document.documentElement.clientWidth)-40;
+  document.getElementById('artomatacanvas').innerHTML = `<canvas id="canvas" width="${h}" height="${h}"></canvas>`;
 
-  let paletteString = "<div class=\"palette-outer\">";
+  let paletteString = `<div class="palette-outer">`;
   let palRadioID = 0;
 
   for (let paletteName in palettes) {
-    if (palettes.hasOwnProperty(paletteName)){
-      let paletteLine = "<div class=\"palette-container\">";
+    if (palettes.hasOwnProperty(paletteName)){let paletteLine = `<div class="palette-container">`;
       let palette = palettes[paletteName]
       
       let is_checked = currentPalette == palette ? " checked" : ""
 
-      paletteLine += "<div class=\"palette-name\"><input type=\"radio\" name=\"chosenpalette\" id=\"palradio"+palRadioID+"\" value=\"";
-      paletteLine += paletteName+"\" onchange=\"do_palette_change();\""+is_checked+"></input><label for=\"palradio"+palRadioID+"\">"+paletteName+"</label></div>";
+      paletteLine += `<div class="palette-name"><input type="radio" name="chosenpalette" id="palradio${palRadioID}"
+        value="${paletteName}" onchange="do_palette_change();"${is_checked}></input>
+        <label for="palradio"${palRadioID}">${paletteName}</label></div>`;
+
       if(palette.type == 'GRADIENT')
         palette.colors = generate_gradient(palette.start, palette.end, 15, palette.powerfactor);
 
-      paletteLine += "<div class=\"palette-preview\"><span style=\"background: "+palette.machinecolor+"\"></span>";
+      paletteLine += `<div class="palette-preview"><span style="background: ${palette.machinecolor}"></span>`;
       palette.colors.forEach(color => {
-        paletteLine += "<span style=\"background: "+color+"\"></span>";
+        paletteLine += `<span style="background: ${color}"></span>`;
       });
-      paletteLine += "<span style=\"background: "+palette.background+"\"></span></div>";
-      paletteLine += "</div>";
-      
+      paletteLine += `<span style="background: ${palette.background}"></span></div></div>`;      
       paletteString += paletteLine;
       palRadioID++;
     }
   }
 
-  $("#palettes").html(paletteString);
+  document.getElementById('palettes').innerHTML = paletteString;
   
   
   function initControl(name, iname, varname, min_c, max_c, step_c, default_c, type_c){
     ctrlarray.push({i: iname, v: varname, t: type_c});
-    let htmlstring = "<div class=\"slidecontainer\"><p>"+name+": <span id=\""+iname+"_span\">"+default_c+"</span></p>";
-    htmlstring+= "<input autocomplete=\"off\" type=\"range\" min=\""+min_c+"\" max=\""+max_c+"\" step=\""+step_c+"\" value=\""+default_c+"\" ";
-    htmlstring+= "class=\"slider\" id=\""+iname+"\"></div>\n";
+    let htmlstring = `<div class="slidecontainer"><p>${name}: <span id="${iname}_span">
+      ${default_c}</span></p><input autocomplete="off" type="range" min="${min_c}" max="${max_c}"
+      step="${step_c}" value="${default_c}" class="slider" id="${iname}" oninput="controlOnInput(this)"></div>`;
     return htmlstring;
   }
-  let ctrlstring = "";
-  ctrlstring += initControl("Number of Machines", "c_machines", 'MACHINES', 1, 10, 1, 2, 'INT');
-  ctrlstring += initControl("Number of Machine States", "c_states", 'STATES', 1, 10, 1, 2, 'INT');
-  ctrlstring += initControl("Number of Symbols", "c_symbols", 'SYMCOUNT', 2, 16, 1, 4, 'INT');
-  ctrlstring += initControl("Grid Size", "c_gridsize", 'arraySize', 16, 128, 2, 32, 'INT');
-  ctrlstring += initControl("Halt Chance", "c_haltchance", 'HALTCHANCE', 0, 0.01, 0.00005, 0.0001, 'FLOAT');
+  let controls = [];
+  controls.push(initControl("Number of Machines", "c_machines", 'MACHINES', 1, 10, 1, 3, 'INT'));
+  controls.push(initControl("Number of Machine States", "c_states", 'STATES', 1, 10, 1, 2, 'INT'));
+  controls.push(initControl("Number of Symbols", "c_symbols", 'SYMCOUNT', 2, 16, 1, 4, 'INT'));
+  controls.push(initControl("Grid Size", "c_gridsize", 'arraySize', 16, 128, 2, 32, 'INT'));
+  controls.push(initControl("Halt Chance", "c_haltchance", 'HALTCHANCE', 0, 0.01, 0.00005, 0.0001, 'FLOAT'));
   
-  $("#settings").html(ctrlstring);
-
-  $("input").on("input", function() {
-    $("#"+this.id+"_span").html(this.value);
-  })
+  document.getElementById('settings').innerHTML = controls.join('\n');
   
-  playbackstring = "";
-  playbackstring += "<button class=\"green\" type=\"button\" onclick=\"read_controls(); init_turing();\">Restart</button>\n";
+  let playback = [];
+  playback.push(`<button class="green" type="button" onclick="read_controls(); init_turing();">Restart</button>`);
 
-  $("#playback").html(playbackstring);
+  document.getElementById('playback').innerHTML = playback.join('\n');
 
-  canvas = $('#canvas')[0];
+  canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
 
   init_turing();
   window.requestAnimationFrame(drawFrame);
 
 
-});
+};
