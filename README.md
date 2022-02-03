@@ -3,9 +3,9 @@ Artomata is an app that generates pseudo-random art based on a simulation inspir
 
 ## Examples
 
-![Preview Image 1](https://www.dropbox.com/s/imb5nj34u4qkgu9/turing1.png?dl=1)
-![Preview Image 2](https://www.dropbox.com/s/dxsscbwiq1v15qf/turing2.png?dl=1)
-![Preview Image 3](https://www.dropbox.com/s/j67e6oak1rg9s3g/turing3.png?dl=1)
+![Preview Image 1](screenshots/s1.png)
+![Preview Image 2](screenshots/s2.png)
+![Preview Image 3](screenshots/s3.png)
 
 ## Roadmap
 
