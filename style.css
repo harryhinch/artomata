@@ -1,4 +1,4 @@
-/* v.1.2.0 */
+/* v.1.2.1 */
 body{
     background: rgb(239,248,249);
     background: linear-gradient(153deg, rgba(239,248,249,1) 0%, rgba(230,229,244,1) 100%);
@@ -12,7 +12,7 @@ body, html {
 body{
     height: 100%;
     margin: auto;
-    max-width: 88rem;
+    max-width: 92rem;
     font-family: 'Readex Pro', sans-serif;
     display: grid;
     grid-template-columns: 100vw auto;
@@ -152,7 +152,8 @@ a:hover{
 
 .slider {
     -webkit-appearance: none;
-    width: 95%;
+    width: 98%;
+    width: -moz-available;
     height: 1.2rem;
     border: 0.1rem solid #292929;
     border-radius: 0;  
@@ -198,6 +199,7 @@ div.button-container{
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    column-gap: 0.4rem;
 }
 button{
     font-family: 'Readex Pro', sans-serif;
@@ -207,11 +209,11 @@ button{
     text-shadow: 1px 0 #fff8;
     box-shadow: inset -0.25rem -0.25rem #0004,
                 inset 0.25rem 0.25rem #fff4;
-    padding: 0.2rem 1rem 0.2rem;
+    padding: 0.2rem 0.35rem 0.2rem;
+    margin-bottom: 0.5rem;
     line-height: 1.2rem;
     text-align: center;
     text-decoration: none;
-    margin: 1rem auto;
     transition: 0.2s background-color;
     background-color: #dddddd;
 }
@@ -249,7 +251,7 @@ button.toggled{
     margin: 0;
     display: inline-block;
     width:0.75rem;
-    height:0.75rem;
+    height:0.77rem;
 }
 
 @media only screen and (min-width: 75rem) {
