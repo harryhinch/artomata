@@ -1,5 +1,4 @@
-// v1.1.0
-
+// v1.2.0
 
 var canvas;
 var ctx;
@@ -28,6 +27,14 @@ var STATE_DIRS = [C_LEFT, C_RIGHT, C_UP, C_DOWN];
 
 var currentPalette = palettes["Blue Retro"]; // from palletes.js
 var ctrlarray = [];
+
+var previous_time;
+var framerate = 30;
+var frametime = 1000 / framerate;
+var max_framerate = 240.5;
+
+var IS_PAUSED = false;
+var IS_FASTFORWARD = false;
 
 function round_lerp (a, b, t) { return Math.round( (1 - t) * b + t * a ) }
 function rgb_to_string(r, g, b) { return `rgb(${r}, ${g}, ${b})` }
@@ -98,16 +105,32 @@ function init_turing(){
   }
 }
 
-function drawFrame()
+function simulate_step(enable_drawing=true)
+{
+  for (let i = 0; i < MACHINES; i++)
+  allmachines[i].compute();
+  if(!enable_drawing) return
+  for (let i = 0; i < MACHINES; i++)
+    allmachines[i].drawme();
+}
+
+function drawFrame(current_time)
 {   
-  for (let i = 0; i < MACHINES; i++) {
-      allmachines[i].compute();
-  }
-  for (let i = 0; i < MACHINES; i++) {
-      allmachines[i].drawme();
-  }
-  
   window.requestAnimationFrame(drawFrame);
+  if(IS_PAUSED || framerate == 0) return;
+
+  if(IS_FASTFORWARD) // compute machines only, don't draw
+  {
+    simulate_step(enable_drawing=false);
+    return;
+  }
+
+  let time_diff = current_time - previous_time;
+  if(framerate == max_framerate || time_diff > frametime) // allow unlimited framerate
+  {
+    previous_time = current_time - (time_diff % frametime);
+    simulate_step();
+  }
 }
 
 function drawSquare(x, y, col_index){
@@ -168,6 +191,79 @@ function read_controls(){
       window[ctrl.v] = document.getElementById(ctrl.i).value;
   });
 }
+var button_playpause;
+var button_restart;
+var button_fastforward;
+var playbackslider_span;
+
+function controlPlaybackSpeed(me){
+  let current_frameval = Math.max(0, Math.min(max_framerate, Number(me.value)));
+  let playback_spantext = ``;
+  if(current_frameval == 0)
+    playback_spantext = `Halted`;
+  else if(current_frameval == max_framerate)
+    playback_spantext = `As Fast As Possible`;
+  else
+    playback_spantext = `${current_frameval}hz`;
+
+  playbackslider_span.innerText = playback_spantext;
+  
+  framerate = current_frameval;
+  frametime = 1000 / framerate;
+}
+
+function controlPlayPause(me){
+  if(me.classList == 'toggled')
+  {
+    button_fastforward.innerHTML = `Fast Forward<span>&#x23e9;&#xfe0e;</span>`;
+    me.innerHTML = `Pause<span>&#x23f8;&#xfe0e;`;
+    playbackslider_span.innerText = playbackslider_span.dataset.last;
+    IS_PAUSED = false;
+    me.classList = '';
+  }
+  else
+  {
+    playbackslider_span.dataset.last = playbackslider_span.innerText;
+    playbackslider_span.innerText = `Paused`;
+    button_fastforward.innerHTML = `Single Step<span>&#x23ed;&#xfe0e;</span>`;
+    me.innerHTML = `Resume<span>&#x25b6;&#xfe0e;`;
+    IS_PAUSED = true;
+    me.classList = 'toggled';
+  }
+}
+
+function controlFastForward(me){
+  if(IS_PAUSED)
+  {
+    simulate_step();
+    return;
+  }
+
+  let overlay = document.getElementById('canvasoverlay');
+  if(me.classList == 'toggled')
+  {
+    button_playpause.disabled = false;
+    button_restart.disabled = false;
+    IS_FASTFORWARD = false;
+    me.classList = '';
+    overlay.style.visibility = 'hidden';
+    redrawGrid();
+  }
+  else
+  {
+    button_playpause.disabled = true;
+    button_restart.disabled = true;
+    IS_FASTFORWARD = true;
+    me.classList = 'toggled';
+    overlay.style.visibility = 'visible';
+  }
+}
+function controlRestart(me){
+  IS_FASTFORWARD = false;
+  read_controls();
+  init_turing();
+  redrawGrid();
+}
 
 window.onload = () => {
   h = Math.min(document.documentElement.clientHeight, document.documentElement.clientWidth)-40;
@@ -184,7 +280,7 @@ window.onload = () => {
 
       paletteLine += `<div class="palette-name"><input type="radio" name="chosenpalette" id="palradio${palRadioID}"
         value="${paletteName}" onchange="do_palette_change();"${is_checked}></input>
-        <label for="palradio"${palRadioID}">${paletteName}</label></div>`;
+        <label for="palradio${palRadioID}">${paletteName}</label></div>`;
 
       if(palette.type == 'GRADIENT')
         palette.colors = generate_gradient(palette.start, palette.end, 15, palette.powerfactor);
@@ -198,6 +294,7 @@ window.onload = () => {
       palRadioID++;
     }
   }
+
 
   document.getElementById('palettes').innerHTML = paletteString;
   
@@ -216,18 +313,33 @@ window.onload = () => {
   controls.push(initControl("Grid Size", "c_gridsize", 'arraySize', 16, 128, 2, 32, 'INT'));
   controls.push(initControl("Halt Chance", "c_haltchance", 'HALTCHANCE', 0, 0.01, 0.00005, 0.0001, 'FLOAT'));
   
+  controls.push(`<p class="settings-hint">Restart to apply new settings.</p>`)
+
   document.getElementById('settings').innerHTML = controls.join('\n');
   
   let playback = [];
-  playback.push(`<button class="green" type="button" onclick="read_controls(); init_turing();">Restart</button>`);
+  playback.push(`<div class="slidecontainer"><p>Simulation Speed: <span id="playbackslider_span">
+  ${framerate}hz</span></p><input autocomplete="off" type="range" min="0" max="${max_framerate}"
+  step="0.5" value="${framerate}" class="slider" id="playbackslider" oninput="controlPlaybackSpeed(this)"></div>`);
+
+  playback.push(`<div class="button-container">
+  <button type="button" id="playpausebutton" onclick="controlPlayPause(this);">Pause<span>&#x23f8;&#xfe0e;</span></button>
+  <button type="button" id="restartbutton" onclick="controlRestart(this);">Restart<span class="smaller">&#x1f504;&#xfe0e;</span></button>
+  <button type="button" id="fastforwardbutton" onclick="controlFastForward(this);">Fast Forward<span>&#x23e9;&#xfe0e;</span></button>
+  </div>`);
 
   document.getElementById('playback').innerHTML = playback.join('\n');
+
+  button_playpause = document.getElementById('playpausebutton');
+  button_restart = document.getElementById('restartbutton');
+  button_fastforward = document.getElementById('fastforwardbutton');
+  playbackslider_span = document.getElementById('playbackslider_span');
 
   canvas = document.getElementById('canvas');
   ctx = canvas.getContext('2d');
 
   init_turing();
+  previous_time = window.performance.now();
   window.requestAnimationFrame(drawFrame);
-
 
 };
