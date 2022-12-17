@@ -1,35 +1,35 @@
-// v1.2.0
+// v1.3.0
 
 var canvas;
 var ctx;
 var tape;
 
-var arraySize = 32;
+var arraySize = 24;
 var gridSize;
 var canvasSize;
 var padding;
 var allmachines;
 
 var TAPE_SIZE = (arraySize * arraySize);
-var SYMCOUNT = 4;
-var SYMBOLS = [0,1,2,3];
+var SYMCOUNT = 8;
+var SYMBOLS = [0,1,2,3,4,5,6,7];
 var C_LEFT = -1;
 var C_RIGHT = 1;
 var C_UP = arraySize;
 var C_DOWN = -arraySize;
 var h;
 
-var MACHINES = 2;
-var STATES = 2;
-var HALTCHANCE = 0.0001;
+var MACHINES = 3;
+var STATES = 6;
+var HALTCHANCE = 0.0000;
 var STATE_DIRS = [C_LEFT, C_RIGHT, C_UP, C_DOWN];
 
 
-var currentPalette = palettes["Blue Retro"]; // from palletes.js
+var currentPalette = palettes["Lush"]; // from palletes.js
 var ctrlarray = [];
 
 var previous_time;
-var framerate = 30;
+var framerate = 4;
 var frametime = 1000 / framerate;
 var max_framerate = 240.5;
 
@@ -37,8 +37,45 @@ var IS_PAUSED = false;
 var IS_FASTFORWARD = false;
 
 function round_lerp (a, b, t) { return Math.round( (1 - t) * b + t * a ) }
+function float_lerp (a, b, t) { return (1 - t) * b + t * a; }
 function rgb_to_string(r, g, b) { return `rgb(${r}, ${g}, ${b})` }
 function get_random_int(max) { return Math.floor(Math.random() * max) }
+
+function HSVtoRGB(h, s, v) {
+  let r, g, b, i, f, p, q, t;
+  h = h % 1;
+
+  i = Math.floor(h * 6);
+  f = h * 6 - i;
+  p = v * (1 - s);
+  q = v * (1 - f * s);
+  t = v * (1 - (1 - f) * s);
+  switch (i % 6) {
+      case 0: r = v, g = t, b = p; break;
+      case 1: r = q, g = v, b = p; break;
+      case 2: r = p, g = v, b = t; break;
+      case 3: r = p, g = q, b = v; break;
+      case 4: r = t, g = p, b = v; break;
+      case 5: r = v, g = p, b = q; break;
+  }
+  return {
+      r: Math.round(r * 255),
+      g: Math.round(g * 255),
+      b: Math.round(b * 255)
+  };
+}
+
+function hsv_blend_colors(start, end, t)
+{
+  let a_h, a_s, a_v, b_h, b_s, b_v, c_h, c_s, c_b;
+  a_h = start[0]; a_s = start[1]; a_v = start[2];
+  b_h = end[0];   b_s = end[1];   b_v = end[2];
+  c_h = float_lerp(a_h, b_h, t);
+  c_s = float_lerp(a_s, b_s, t);
+  c_v = float_lerp(a_v, b_v, t);
+  let c = HSVtoRGB(c_h, c_s, c_v);
+  return rgb_to_string(c.r, c.g, c.b);
+}
 
 function blend_colors(start, end, t)
 {
@@ -59,6 +96,21 @@ function generate_gradient(start, end, steps, powerfactor)
   {
     let t = Math.pow( 1.0-(i/(steps-1.0)), powerfactor);
     arr.push(blend_colors(start, end, t));
+  }
+  return arr;
+}
+
+function generate_hsvgradient(start, end, steps, powerfactor)
+{
+  if(steps <= 1) {
+    let c = HSVtoRGB(start[0], start[1], start[2]);
+    return [rgb_to_string(rgb_to_string(c.r, c.g, c.b))]
+  }
+  let arr = [];
+  for(let i = 0; i < steps; i++)
+  {
+    let t = Math.pow( 1.0-(i/(steps-1.0)), powerfactor);
+    arr.push(hsv_blend_colors(start, end, t));
   }
   return arr;
 }
@@ -109,9 +161,14 @@ function simulate_step(enable_drawing=true)
 {
   for (let i = 0; i < MACHINES; i++)
   allmachines[i].compute();
-  if(!enable_drawing) return
+
+  if(!enable_drawing) return;
   for (let i = 0; i < MACHINES; i++)
     allmachines[i].drawme();
+  
+  if(!audioController) return;
+  for (let i = 0; i < Math.min(MACHINES, audioController.voicecount); i++)
+    allmachines[i].audio(audioController, i);
 }
 
 function drawFrame(current_time)
@@ -168,6 +225,9 @@ function do_palette_change()
   if(currentPalette.type == 'GRADIENT')
     currentPalette.colors = generate_gradient(currentPalette.start, currentPalette.end, SYMCOUNT-1, currentPalette.powerfactor);
 
+  if(currentPalette.type == 'HSVGRADIENT')
+    currentPalette.colors = generate_hsvgradient(currentPalette.start, currentPalette.end, SYMCOUNT-1, currentPalette.powerfactor);
+
   if(currentPalette.type == 'LIST_SHUFFLE')
     currentPalette.colors.shuffle();
 
@@ -198,6 +258,8 @@ var playbackslider_span;
 
 function controlPlaybackSpeed(me){
   let current_frameval = Math.max(0, Math.min(max_framerate, Number(me.value)));
+  if(me.dataset.slowfactor)
+    current_frameval /= me.dataset.slowfactor;
   let playback_spantext = ``;
   if(current_frameval == 0)
     playback_spantext = `Halted`;
@@ -265,8 +327,22 @@ function controlRestart(me){
   redrawGrid();
 }
 
+function controlSlowdown(me){
+  me.classList.toggle('toggled'); 
+  const slowmode = me.classList.contains('toggled');
+  const playbackslider = document.getElementById('playbackslider')
+  playbackslider.dataset.slowfactor = slowmode ? 10 : 1;
+  controlPlaybackSpeed(playbackslider);
+}
+
+function paletteSelect(me) {
+  const radio = document.getElementById(me.dataset.target);
+  radio.click();
+}
+
 window.onload = () => {
-  h = Math.min(document.documentElement.clientHeight, document.documentElement.clientWidth)-40;
+  const canvaspadding = document.documentElement.clientWidth < 720 ? 50 : 40
+  h = Math.min(document.documentElement.clientHeight, document.documentElement.clientWidth)-canvaspadding;
   document.getElementById('artomatacanvas').innerHTML = `<canvas id="canvas" width="${h}" height="${h}"></canvas>`;
 
   let paletteString = `<div class="palette-outer">`;
@@ -285,7 +361,11 @@ window.onload = () => {
       if(palette.type == 'GRADIENT')
         palette.colors = generate_gradient(palette.start, palette.end, 15, palette.powerfactor);
 
-      paletteLine += `<div class="palette-preview"><span style="background: ${palette.machinecolor}"></span>`;
+      if(palette.type == 'HSVGRADIENT')
+        palette.colors = generate_hsvgradient(palette.start, palette.end, 15, palette.powerfactor);
+
+      paletteLine += `<div class="palette-preview" onclick="paletteSelect(this)" data-target="palradio${palRadioID}">
+        <span style="background: ${palette.machinecolor}"></span>`;
       palette.colors.forEach(color => {
         paletteLine += `<span style="background: ${color}"></span>`;
       });
@@ -307,25 +387,46 @@ window.onload = () => {
     return htmlstring;
   }
   let controls = [];
-  controls.push(initControl("Number of Machines", "c_machines", 'MACHINES', 1, 10, 1, 3, 'INT'));
-  controls.push(initControl("Number of Machine States", "c_states", 'STATES', 1, 10, 1, 2, 'INT'));
-  controls.push(initControl("Number of Symbols", "c_symbols", 'SYMCOUNT', 2, 16, 1, 4, 'INT'));
-  controls.push(initControl("Grid Size", "c_gridsize", 'arraySize', 16, 128, 2, 32, 'INT'));
-  controls.push(initControl("Halt Chance", "c_haltchance", 'HALTCHANCE', 0, 0.01, 0.00005, 0.0001, 'FLOAT'));
+  controls.push(initControl("Number of Machines", "c_machines", 'MACHINES', 1, 10, 1, MACHINES, 'INT'));
+  controls.push(initControl("Number of Machine States", "c_states", 'STATES', 1, 10, 1, STATES, 'INT'));
+  controls.push(initControl("Number of Symbols", "c_symbols", 'SYMCOUNT', 2, 16, 1, SYMCOUNT, 'INT'));
+  controls.push(initControl("Grid Size", "c_gridsize", 'arraySize', 16, 128, 2, arraySize, 'INT'));
+  controls.push(initControl("Halt Chance", "c_haltchance", 'HALTCHANCE', 0, 0.01, 0.00005, HALTCHANCE, 'FLOAT'));
   
   controls.push(`<p class="settings-hint">Restart to apply new settings.</p>`)
 
   document.getElementById('settings').innerHTML = controls.join('\n');
   
+  let audioctrl = [];
+
+  let audiobuttons = "";
+  ['legato'].forEach(field => {
+    audiobuttons += `${createAudioInput(field)}\n`;
+  });
+
+  audioctrl.push(`<div class="button-container">
+  <button type="button" id="startaudiobutton" onclick="toggleAudio(this);">Start Audio</button>
+  ${audiobuttons}
+  </div>`);
+
+  // define input order 
+  ['volume', 'notegroup', 'voicecount', 'basefreq', 'transpose',
+    'attack', 'decay', 'voicedelay'].forEach(field => {
+      audioctrl.push(createAudioInput(field));
+  });
+  
+  document.getElementById('audio').innerHTML = audioctrl.join('\n');
+
   let playback = [];
   playback.push(`<div class="slidecontainer"><p>Simulation Speed: <span id="playbackslider_span">
-  ${framerate}hz</span></p><input autocomplete="off" type="range" min="0" max="${max_framerate}"
+  ${framerate}hz</span></p><input autocomplete="off" type="range" min="0" max="${max_framerate}" data-slowfactor="1"
   step="0.5" value="${framerate}" class="slider" id="playbackslider" oninput="controlPlaybackSpeed(this)"></div>`);
 
   playback.push(`<div class="button-container">
   <button type="button" id="playpausebutton" onclick="controlPlayPause(this);">Pause<span>&#x23f8;&#xfe0e;</span></button>
   <button type="button" id="restartbutton" onclick="controlRestart(this);">Restart<span class="smaller">&#x1f504;&#xfe0e;</span></button>
   <button type="button" id="fastforwardbutton" onclick="controlFastForward(this);">Fast Forward<span>&#x23e9;&#xfe0e;</span></button>
+  <button type="button" id="slowdownbutton" onclick="controlSlowdown(this);">Slowdown<span>⏱</span></button>
   </div>`);
 
   document.getElementById('playback').innerHTML = playback.join('\n');

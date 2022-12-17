@@ -1,4 +1,4 @@
-// v1.0.0
+// v1.1.0
 
 var palettes = {};
 
@@ -49,12 +49,39 @@ palettes["Blue Retro"] = {
 };
 
 palettes["Sunset"] = {
-  type: 'GRADIENT',
-  start: [250, 100, 0],
-  end: [120, 50, 150],
-  powerfactor: 1.5,
-  background: 'rgb(110, 40, 150)',
-  machinecolor: 'rgb(250, 100, 0)',
+  type: 'HSVGRADIENT',
+  start: [1.15, 1, 1],
+  end: [0.75, 0.8, 1],
+  powerfactor: 1,
+  background: 'rgb(127, 55, 199)',
+  machinecolor: 'rgb(255, 240, 20)',
+};
+
+palettes["Lush"] = {
+  type: 'HSVGRADIENT',
+  start: [0.35, 1, 1],
+  end: [0.65, 1, 1],
+  powerfactor: 1.75,
+  background: 'rgb(0, 0, 140)',
+  machinecolor: 'rgb(0, 255, 26)',
+};
+
+palettes["Vivid Rainbow"] = {
+  type: 'HSVGRADIENT',
+  start: [0, 1, 1],
+  end: [0.88, 1, 1],
+  powerfactor: 1,
+  background: 'rgb(0, 0, 0)',
+  machinecolor: 'rgb(255, 255, 255)',
+};
+
+palettes["Pastel Rainbow"] = {
+  type: 'HSVGRADIENT',
+  start: [0, 0.33, 1],
+  end: [0.88, 0.33, 1],
+  powerfactor: 1,
+  background: 'rgb(228, 237, 250)',
+  machinecolor: 'rgb(255, 255, 255)',
 };
 
 palettes["PICO-8"] = {

@@ -1,22 +1,24 @@
-/* v.1.2.1 */
-body{
+/* v.1.3.0 */
+
+body, html{
     background: rgb(239,248,249);
     background: linear-gradient(153deg, rgba(239,248,249,1) 0%, rgba(230,229,244,1) 100%);
 }
 body, html {
     padding:0;
     margin: 0;
-    height: 100vh;
-    width: 100vw;
+    width: calc( 100vw - 25px );
+    overflow-x: hidden;
+    font-size: 150%;
 }
 body{
     height: 100%;
     margin: auto;
-    max-width: 92rem;
+    max-width: 95rem;
     font-family: 'Readex Pro', sans-serif;
     display: grid;
-    grid-template-columns: 100vw auto;
-    grid-template-rows: 100vw auto;
+    grid-template-columns: calc( 100vw - 25px ) auto;
+    grid-template-rows: 98vw auto;
 }
 
 .loading-anim{
@@ -64,6 +66,7 @@ body{
 #artomatacanvas{
     display: flex;
     justify-content: center;
+    height: min( 85vw, 85vh );
 }
 #canvasoverlay{
     visibility: hidden;
@@ -80,15 +83,17 @@ body{
     padding: 0 1rem;
     grid-column: 1 / 2;
     grid-row: 2 / 3;
-    font-size: 200%;
+    overflow-y: auto;
+    max-height: min(100vw, 50vh);
 }
 .window {
     border: 2px solid #888;
     box-shadow: 0.25rem 0.25rem #8884;
 }
 #controls .window{
+    margin: auto;
     margin-bottom: 1rem;
-    max-width: 32rem;
+    max-width: 50rem;
 }
 #artomata .window{
     height: inherit;
@@ -167,6 +172,11 @@ a:hover{
     outline: none;
 }
 
+.slider:disabled {
+    background-color: transparent;
+    border-color: #29292977;
+}
+
 .slider::-webkit-slider-thumb { /* Chrome styling */
     -webkit-appearance: none;
     width: 1.4rem;
@@ -189,6 +199,16 @@ a:hover{
     box-shadow: inset -0.1rem -0.1rem #0004,
                 inset 0.1rem 0.1rem #fff;
 }
+
+.slider:disabled::-webkit-slider-thumb,
+.slider:disabled::-moz-range-thumb {
+    border-color: #29292977;
+    background-color: #d8d8d877;
+    box-shadow: inset -0.1rem -0.1rem #0002,
+                inset 0.1rem 0.1rem #fff4;
+    cursor: default;
+}
+
 .settings-hint{
     color: #0008;
     margin: 0;
@@ -238,37 +258,78 @@ button.toggled{
     display: flex;
     justify-content: space-between;
 }
-
 .palette-preview{
     height: 0.75rem;
     line-height: 0.75rem;
+    font-size: 0.75rem;
     border: 1px solid #333;
     padding: 0;
     margin: 0;
+    margin-top: 0.8rem;
 }
 .palette-preview span{
     padding: 0;
     margin: 0;
     display: inline-block;
     width:0.75rem;
-    height:0.77rem;
+    height:0.74rem;
+}
+.palette-name label {
+    font-size: 1.5rem;
 }
 
 @media only screen and (min-width: 75rem) {
-    body{
+    body, html {
+        width: 100vw;
+        height: 100vh;
+        font-size: unset;
+    }
+    body {
         grid-template-columns: 100vh auto;
         grid-template-rows: 100vh auto;
+    }
+    #artomatacanvas {
+        height: fit-content;
     }
     #controls {
         font-size: 100%;
         grid-column: 2 / 3;
         grid-row: 1 / 2;
-    }/*
-    .slider::-webkit-slider-thumb {
-        width: 2em;
-        height: 2em;
-    }.slider::-moz-range-thumb {
-        width: 2em;
-        height: 2em;
-    }*/
+        padding-top: 0;
+        padding-left: 1rem;
+        max-height: unset;
+    }
+}
+
+@media only screen and (max-width: 75rem) {
+    button{
+        font-size: 2rem;
+        line-height: 2rem;
+    }
+    .header {
+        font-size: 150%;
+        height: 2.9rem;
+    }
+    .slidecontainer {
+        padding: 0.1rem 2.5rem 0.1rem;
+    }
+    .slider {
+        height: 2.5rem;
+        border-width: 0.2rem;
+    }
+    .slider::-webkit-slider-thumb,
+    .slider::-moz-range-thumb {
+        width: 2.5rem;
+        height: 2.5rem; 
+        border-width: 0.2rem;
+    }
+    .palette-preview{
+        height: 1.25rem;
+        line-height: 1.25rem;
+        font-size: 1.25rem;
+    }
+    .palette-preview span{
+        width:1.25rem;
+        height:1.24rem;
+    }
 }

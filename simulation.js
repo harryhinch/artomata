@@ -1,4 +1,4 @@
-// v1.0.0
+// v1.1.0
 
 class UnitData
 {
@@ -42,6 +42,8 @@ class TuringMachine
     this.current_state = 0;
     this.pos = 0;
     this.lastpos = 0;
+    this.lastwrite = 0;
+    this.updatedwrite = false;
     this.states = new Array(STATES);
 
     for(let i = 0; i < STATES; i++)
@@ -64,6 +66,8 @@ class TuringMachine
       let read_in = tape[this.pos];
       let state_data = this.states[this.current_state].calc(read_in);
       tape[this.pos] = state_data.write;
+      this.updatedwrite = !(state_data.write == this.lastwrite);
+      this.lastwrite = state_data.write;
       this.pos = this.pos+state_data.moveto;
 
       if(this.pos>TAPE_SIZE-1)
@@ -88,6 +92,12 @@ class TuringMachine
         y = Math.floor(this.lastpos/arraySize);
         drawSquare(x,y,tape[this.lastpos]);
     }
+  }
+
+  audio(audioController, voice_index) {
+    if(audioController.legato && !this.updatedwrite) return;
+    //if(this.lastwrite != 0)
+      audioController.play(this.lastwrite, voice_index);
   }
 
 }
